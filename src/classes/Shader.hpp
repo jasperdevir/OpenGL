@@ -1,25 +1,36 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 #include <glad/glad.h> 
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <string>
+#include <fstream>
+#include <sstream>
 #include <iostream>
 
 class Shader{
     private:
-        unsigned int vertexShader;
-        unsigned int fragmentShader;
         unsigned int shaderProgram;
 
-        unsigned int initShader(const char* shaderSrc, int type);
+        std::string parseShader(std::string path);
+        unsigned int initShader(std::string shaderSrc, int type);
 
     public:
-        Shader(const char* vertShaderSrc, const char* fragShaderSrc);
+        Shader();
+        Shader(std::string vertPath, std::string fragPath);
         ~Shader();
 
         void use();
+
+        void setBool(const std::string &name, bool value);
+        void setInt(const std::string &name, int value);   
+        void setFloat(const std::string &name, float value);
+        void setVec3(const std::string &name, glm::vec3 value);
+        void setVec4(const std::string &name, glm::vec4 value);
+        void setMat4(const std::string &name, glm::mat4 value);
 
 };
 

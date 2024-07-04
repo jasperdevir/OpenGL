@@ -1,66 +1,81 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h> 
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 
 #include "classes/Geometry.hpp"
 #include "classes/Shader.hpp"
-
-GLFWwindow* initGLFW(unsigned int width, unsigned int height);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+#include "classes/Material.hpp"
+#include "classes/Window.hpp"
+#include "classes/Clock.hpp"
+#include "classes/Camera.hpp"
+#include "classes/Object.hpp"
+#include "classes/Scene.hpp"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char *vertexShaderSrc = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSrc = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
 int main() {
-    GLFWwindow* window = initGLFW(SCR_WIDTH, SCR_HEIGHT);
-    if(window == NULL){
+    Window window = Window(SCR_WIDTH, SCR_HEIGHT, "Window");
+    
+    if(!window.init()){
         return -1;
     }
+    Camera camera = Camera(glm::vec2(SCR_WIDTH, SCR_HEIGHT), 0.01f, 100.0f);
+    camera.setPosition(glm::vec3(0.0f, 0.0f, -3.0f));
+    Scene scene = Scene(&camera);
+    scene.setBackground(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    Shader shader(vertexShaderSrc, fragmentShaderSrc);
+    Clock clock = Clock();
 
-    std::vector<float> vertices = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,  
-         0.5f,  0.5f, 0.0f,  
-        -0.5f,  0.5f, 0.0f   
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
 
-    std::vector<unsigned int> indices = {
-        0, 1, 2, 
-        2, 3, 0   
-    };
+    BoxGeometry geometry = BoxGeometry();
+    BasicMaterial material = BasicMaterial(glm::vec4(1.0f, 0.6f, 0.3f, 1.0f));
+    material.setWireframe(true);
+    
+    for(int i = 0; i < 10; i++){
+        Object object(&geometry, &material);
+        object.setPosition(cubePositions[i]);
+        float angle = 30.0f * i;
+        object.setRotation(angle, glm::vec3(1.0f, 0.3f, 0.5f));
+        scene.add(object);
+    }
 
-    Geometry geometry(vertices, indices);
+    const float radius = 10.0f;
 
-    while (!glfwWindowShouldClose(window))
+    while (!window.shouldWindowClose())
     {
+        clock.tick();
+
         /* INPUT */
-        processInput(window);
+        window.processInput();
 
         /* RENDER */
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        float camX = sin(clock.getElapsedTime()) * radius;
+        float camZ = cos(clock.getElapsedTime()) * radius;
 
-        shader.use();
-        geometry.draw();
+        camera.setPosition(glm::vec3(camX, 0.0f, camZ));
+        camera.lookAt(glm::vec3(0.0));
 
-        glfwSwapBuffers(window);
+        scene.render();
+
+        window.swapBuffer();
         glfwPollEvents();
     }
 
@@ -68,35 +83,3 @@ int main() {
     return 0;
 }
 
-GLFWwindow* initGLFW(unsigned int width, unsigned int height){
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(width, height, "LearnOpenGL", NULL, NULL);
-    if (window == NULL) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return NULL;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return NULL;
-    }
-
-    return window;
-}
-
-void processInput(GLFWwindow *window){
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height){
-    glViewport(0, 0, width, height);
-}
