@@ -4,9 +4,10 @@
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "Texture.hpp"
+#include "Light.hpp"
 
 #include <string>
-
+#include <vector>
 
 class Material {
     protected:
@@ -19,7 +20,7 @@ class Material {
 
         Shader* getShader();
         void setWireframe(bool newWireframe);
-        void use(Camera* camera, glm::mat4 model);
+        virtual void use(Camera* camera, glm::mat4 model);
 
 };
 
@@ -30,6 +31,7 @@ class ShaderMaterial : public Material{
         ShaderMaterial(Shader* _shader);
 
         void setShader(Shader* newShader);
+        void use(Camera* camera, glm::mat4 model) override;
 };
 
 class BasicMaterial : public Material{
@@ -40,20 +42,46 @@ class BasicMaterial : public Material{
         BasicMaterial(glm::vec4 _color);
 
         void setColor(glm::vec4 newColor);
+        void use(Camera* camera, glm::mat4 model) override;
 };
 
-class LambertMaterial : public Material{
+class LightMaterial : public Material{
     private:
 
     public:
-        LambertMaterial();
+        LightMaterial();
+
+        void bindLighting(AmbientLight* ambientLight, std::vector<Light*> lights);
 };
 
-class PhongMaterial : public Material{
+class LambertMaterial : public LightMaterial{
     private:
+        Texture* diffuseMap;
+        glm::vec3 color;
 
     public:
-        PhongMaterial();
+        LambertMaterial(glm::vec3 _color);
+        LambertMaterial(Texture* diffuseMap);
+        ~LambertMaterial();
+
+        void use(Camera* camera, glm::mat4 model) override;
+};
+
+class PhongMaterial : public LightMaterial{
+    private:
+        Texture* diffuseMap;
+        Texture* specularMap;
+        glm::vec3 color;
+        float shininess;
+        float specular;
+
+    public:
+        PhongMaterial(glm::vec3 _color, float _shininess, float _specular);
+        PhongMaterial(Texture* diffuseMap, float _shinines, float _specular);
+        PhongMaterial(Texture* diffuseMap, Texture* specularMap, float _shinines, float _specular);
+        ~PhongMaterial();
+
+        void use(Camera* camera, glm::mat4 model) override;
 };
 
 class TextureMaterial : public Material{
@@ -61,21 +89,9 @@ class TextureMaterial : public Material{
         Texture* diffuseTex;
 
     public:
-        TextureMaterial(std::string diffusePath);
-};
+        TextureMaterial(Texture* _diffuseTex);
 
-class LambertMaterialT : public TextureMaterial{
-    private:
-
-    public:
-        LambertMaterialT(std::string diffusePath);
-};
-
-class PhongMaterialT : public TextureMaterial{
-    private:
-
-    public:
-        PhongMaterialT(std::string diffusePath);
+        void use(Camera* camera, glm::mat4 model) override;
 };
 
 #endif

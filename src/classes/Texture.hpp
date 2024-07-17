@@ -1,8 +1,6 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "../include/stb_image/stb_image.h"
-
 #include <glad/glad.h>
 
 #include <string>
@@ -15,7 +13,8 @@ class Texture{
     public:
         Texture(std::string path);
 
-        void bind();
+        void bind(int index);
+        unsigned int getTexture();
 
 };
 

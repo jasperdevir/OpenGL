@@ -9,6 +9,9 @@
 #include "Geometry.hpp"
 #include "Material.hpp"
 #include "Camera.hpp"
+#include "Light.hpp"
+
+#include <vector>
 
 class Object{
     private:
@@ -27,6 +30,8 @@ class Object{
         void setScale(glm::vec3 newScale);
         void setRotation(float newRotation, glm::vec3 axis);
         void updateModel();
+
+        void bindLighting(AmbientLight* ambientLight, std::vector<Light*> lights);
 
         void render(Camera* camera);
 };  

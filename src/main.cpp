@@ -9,6 +9,7 @@
 
 #include "classes/Geometry.hpp"
 #include "classes/Shader.hpp"
+#include "classes/Light.hpp"
 #include "classes/Material.hpp"
 #include "classes/Window.hpp"
 #include "classes/Clock.hpp"
@@ -26,7 +27,7 @@ int main() {
         return -1;
     }
     Camera camera = Camera(glm::vec2(SCR_WIDTH, SCR_HEIGHT), 0.01f, 100.0f);
-    camera.setPosition(glm::vec3(0.0f, 0.0f, -3.0f));
+    camera.setPosition(glm::vec3(0.0f, 0.0f, -5.0f));
     Scene scene = Scene(&camera);
     scene.setBackground(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -46,9 +47,25 @@ int main() {
     };
 
     BoxGeometry geometry = BoxGeometry();
-    BasicMaterial material = BasicMaterial(glm::vec4(1.0f, 0.6f, 0.3f, 1.0f));
-    material.setWireframe(true);
-    
+
+    Texture diffuse = Texture("../assets/textures/container.jpg");
+    PhongMaterial material = PhongMaterial(&diffuse, 32.0f, 0.5f);
+    material.setWireframe(false);
+
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f,  0.2f,  2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, -3.0f)
+    };  
+
+    AmbientLight* ambientLight = new AmbientLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
+    for(int i = 0; i < 4; i++){
+        PointLight* light = new PointLight(pointLightPositions[i], glm::vec3(1.0f, 1.0f, 1.0f), 0.09f, 0.032f);
+        scene.add(light);
+    }
+    scene.add(ambientLight);
+
     for(int i = 0; i < 10; i++){
         Object object(&geometry, &material);
         object.setPosition(cubePositions[i]);
@@ -56,6 +73,8 @@ int main() {
         object.setRotation(angle, glm::vec3(1.0f, 0.3f, 0.5f));
         scene.add(object);
     }
+
+    scene.bindLighting();
 
     const float radius = 10.0f;
 
@@ -71,8 +90,7 @@ int main() {
         float camZ = cos(clock.getElapsedTime()) * radius;
 
         camera.setPosition(glm::vec3(camX, 0.0f, camZ));
-        camera.lookAt(glm::vec3(0.0));
-
+        camera.lookAt(glm::vec3(0.0f));
         scene.render();
 
         window.swapBuffer();

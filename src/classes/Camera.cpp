@@ -21,6 +21,10 @@ void Camera::lookAt(glm::vec3 target){
     );
 }
 
+glm::vec3 Camera::getPosition(){
+    return position;
+}
+
 glm::mat4 Camera::getProjection(){
     return projection;
 }

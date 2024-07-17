@@ -1,3 +1,8 @@
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "../include/stb_image/stb_image.h"
+#endif
+
 #include "Texture.hpp"
 
 Texture::Texture(std::string path){
@@ -21,6 +26,11 @@ Texture::Texture(std::string path){
     stbi_image_free(data); 
 }
 
-void Texture::bind(){
+void Texture::bind(int index){
+    glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_2D, texture);
+}
+
+unsigned int Texture::getTexture(){
+    return texture;
 }

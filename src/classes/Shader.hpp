@@ -7,9 +7,21 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <string>
+#include <functional>
+#include <vector>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+template<typename T>
+class ShaderUniform{
+    private:
+        T value;
+        std::function<void(float)> func;
+
+    public:
+        ShaderUniform(T _value, std::function<void(float)> _func);
+};
 
 class Shader{
     private:

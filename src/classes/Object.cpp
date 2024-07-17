@@ -26,6 +26,12 @@ void Object::updateModel(){
     model = glm::translate(glm::mat4(1.0f), position) * rotation * glm::scale(glm::mat4(1.0f), scale);
 }
 
+void Object::bindLighting(AmbientLight* ambientLight, std::vector<Light*> lights){
+    if (LightMaterial* lightMaterial = dynamic_cast<LightMaterial*>(material)) {
+        lightMaterial->bindLighting(ambientLight, lights);
+    }
+}
+
 void Object::render(Camera* camera){
     updateModel();
     material->use(camera, model);

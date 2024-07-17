@@ -1,5 +1,11 @@
 #include "Shader.hpp"
 
+template<typename T>
+ShaderUniform<T>::ShaderUniform(T _value, std::function<void(float)> _func){
+    value = _value;
+    func = _func;
+}
+
 Shader::Shader() {}
 
 Shader::Shader(std::string vertPath, std::string fragPath) {

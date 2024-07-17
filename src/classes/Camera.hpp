@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <iostream>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,6 +20,7 @@ class Camera {
         void setPosition(glm::vec3 position);
         void lookAt(glm::vec3 target);
 
+        glm::vec3 getPosition();
         glm::mat4 getProjection();
         glm::mat4 getView();
 };
